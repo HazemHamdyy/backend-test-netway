@@ -1,100 +1,196 @@
+
 # Backend Developer Coding Test
 
-Welcome to the coding test for the **Backend Developer role**. This test evaluates your skills in Node.js, Express.js, Express Validator, JWT Authentication, Authorization Middleware, database management, and API design.
+Welcome to the Backend Developer Coding Test for the Backend Developer role! This test evaluates your skills in Node.js, Express.js, MongoDB, authentication, and API design.
 
-## Test Instructions
+## Test Objective
 
-1. **Clone the Repository**: Fork this repository and complete the coding challenges below.
-2. **Complete the Challenges**: Implement the tasks as specified.
-3. **Submit the Solution**: Once you have completed the tasks, push your code to your repository and share the link.
+To create a Product Inventory System API with robust JWT authentication and authorization, proper input validation, caching, and optimized database querying.
 
 ---
 
-## Challenge 1: Build a RESTful API with Node.js, Express, Express Validator, and JWT Authentication
+## Project Features
 
-### Objective
-Create a RESTful API using Node.js and Express.js to manage a Product Inventory System with JWT authentication and authorization middleware.
+### Authentication
+- **Signup (`POST /auth/signup`)**: Create a new user account with a JWT token.
+- **Login (`POST /auth/login`)**: Authenticate a user and generate a JWT token for subsequent API requests.
 
-### Requirements
+### Authorization
+- Admin-only routes are protected by an authorization middleware that checks the user's role from the decoded JWT.
 
-#### Authentication:
-- Use JWT for authentication. Implement a login endpoint (`POST /auth/login`) to generate a JWT token, which will be required to access the protected routes.
+### Product Management
+- **Create Product (`POST /products`)**: Add a new product. (Admin only)
+- **List Products (`GET /products`)**: Retrieve a paginated list of products, with optional filtering by category.
+- **Get Product by ID (`GET /products/:id`)**: Fetch details of a single product by its ID.
+- **Update Product (`PUT /products/:id`)**: Modify an existing product. (Admin only)
+- **Delete Product (`DELETE /products/:id`)**: Remove a product from the database. (Admin only)
 
-#### Authorization:
-- Implement authorization middleware to protect routes that require admin access (e.g., adding, updating, and deleting products).
-- Authorization middleware should check the role from the decoded JWT token and ensure only users with the `admin` role can access these routes.
+---
 
-#### Endpoints:
-- **POST /auth/login**: User login (returns a JWT token).
-- **POST /products**: Add a new product (`name`, `category`, `price`, `quantity`). Only accessible to admin.
-- **GET /products**: List all products with pagination (10 products per page).
-- **GET /products/:id**: Get a single product by its ID.
-- **PUT /products/:id**: Update a product. Only accessible to admin.
-- **DELETE /products/:id**: Delete a product. Only accessible to admin.
+## API Endpoints
 
-#### Input Validation (using Express Validator):
-- Use Express Validator for validation on the POST and PUT endpoints.
-- Ensure the following validations:
-  - `name` is required.
-  - `category` is optional but should be a string.
-  - `price` should be a positive number.
-  - `quantity` should be a non-negative integer.
+### Authentication Endpoints
+- **POST /auth/signup**  
+  - Request Body:
+    ```json
+    {
+      "email": "user@example.com",
+      "password": "securepassword"
+    }
+    ```
+  - Response:  
+    ```json
+    {
+      "status": "success",
+      "token": "jwt_token",
+      "data": {
+        "user": { "id": "user_id", "email": "user@example.com", "role": "CLIENT" }
+      }
+    }
+    ```
 
-#### Database:
-- Use MongoDB for storing product data with the following schema:
+- **POST /auth/login**  
+  - Request Body:
+    ```json
+    {
+      "email": "user@example.com",
+      "password": "securepassword"
+    }
+    ```
+  - Response:  
+    ```json
+    {
+      "status": "success",
+      "token": "jwt_token",
+      "data": {
+        "user": { "id": "user_id", "email": "user@example.com", "role": "CLIENT" }
+      }
+    }
+    ```
 
+### Product Endpoints
+- **POST /products**  
+  - Admin-only. Add a new product.
+  - Request Body:
+    ```json
+    {
+      "name": "Product Name",
+      "category": "Category",
+      "price": 100.0,
+      "quantity": 10
+    }
+    ```
+
+- **GET /products**  
+  - Retrieve products with optional filtering by category and pagination.  
+  - Query Parameters:
+    - `category` (optional): Filter by category.
+    - `page` (optional): Specify the page number (default is 1).
+  - Response:
+    ```json
+    {
+      "status": "success",
+      "currentPage": 1,
+      "data": {
+        "products": [
+          {
+            "id": "product_id",
+            "name": "Product Name",
+            "category": "Category",
+            "price": 100.0,
+            "quantity": 10
+          }
+        ]
+      }
+    }
+    ```
+
+- **GET /products/:id**  
+  - Fetch details of a product by ID.  
+
+- **PUT /products/:id**  
+  - Admin-only. Update an existing product.  
+  - Request Body: Partial or full product details to update.
+
+- **DELETE /products/:id**  
+  - Admin-only. Delete a product.
+
+---
+
+## Database
+
+The application uses MongoDB to manage data.  
+
+### Product Schema
 ```json
 {
-  "name": String,
-  "category": String,
-  "price": Number,
-  "quantity": Number,
-  "createdAt": Date,
-  "updatedAt": Date
+  "name": { "type": "String", "required": true },
+  "category": { "type": "String", "required": false },
+  "price": { "type": "Number", "required": true },
+  "quantity": { "type": "Number", "required": true },
+  "createdAt": { "type": "Date", "default": "Date.now" },
+  "updatedAt": { "type": "Date", "default": "Date.now" }
 }
 ```
 
-## Features:
-- Implement basic validation for required fields and proper error handling using Express Validator.
-- Ensure security best practices for authentication and authorization.
+### User Schema
+```json
+{
+  "email": { "type": "String", "required": true, "unique": true, "lowercase": true },
+  "password": { "type": "String", "required": true, "select": false },
+  "role": { "type": "String", "enum": ["client", "admin"], "default": "client" }
+}
+```
 
 ---
 
-## Challenge 2: Database Query Optimization
+## Middleware
 
-### Objective
-Write optimized SQL/NoSQL queries to retrieve product data efficiently.
+### Caching
+The API uses a caching mechanism to optimize repeated queries:
+- For product listing by category, results are cached for 30 minutes (TTL: 1800 seconds).
 
-Requirements
-SQL Query: (Assuming PostgreSQL)
-
-Write a query to fetch products with a price between $50 and $200, ordered by price (ascending), with pagination (10 products per page).
-NoSQL Query: (Assuming MongoDB)
-
-Write a query to retrieve products by category (e.g., "Electronics"), sorted by price in descending order. Limit the result to 5 products per page.
-Optimization:
-
-How would you optimize the queries for high traffic scenarios (e.g., indexing, caching)?
-
+### Authorization Middleware
+- Validates the user's JWT and checks if the user has the required role (e.g., admin) for restricted routes.
 
 ---
 
-## Submission Instructions
+## How to Run
 
-1. **Clone This Repository**: Fork this repository and set up your environment.
-2. **Complete the Tasks**: Implement the tasks in the respective directories for each challenge.
-3. **Test Your Work**: Ensure your APIs, authentication, authorization, and queries work as expected.
-4. **Submit Your Solution**: Push your completed code to your public GitHub repository and share the link with us.
+1. **Clone the Repository**  
+   ```bash
+   git clone <repository_url>
+   cd <repository_name>
+   ```
 
+2. **Install Dependencies**  
+   ```bash
+   npm install
+   ```
 
-## Timeline
-You have **2 days** to complete and submit the coding test.
+3. **Set Up Environment Variables**  
+   Create a `.env` file and configure the following variables:
+   ```
+   PORT=3000
+   MONGO_URI=mongodb://localhost:27017/<db_name>
+   JWT_SECRET=<your_secret_key>
+   ```
+
+4. **Run the Server**  
+   ```bash
+   npm start
+   ```
+
+5. **Test the Endpoints**  
+   Use a tool like Postman or cURL to test the API endpoints.
 
 ---
 
-## Questions?
-Feel free to reach out if you need clarification.
+## Optimization Techniques
 
----
+### Database Indexing
+- Added an index on the `category` field in the Product model to speed up queries for filtering by category.
 
-Good luck! 🚀
+### Caching
+- Used a cache manager to cache product listing by category.
+

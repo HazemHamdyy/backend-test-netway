@@ -1,0 +1,28 @@
+{
+  "name": "backend-test-netway",
+  "version": "1.0.0",
+  "description": "Welcome to the coding test for the **Backend Developer role**. This test evaluates your skills in Node.js, Express.js, Express Validator, JWT Authentication, Authorization Middleware, database management, and API design.",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "node ./src/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HazemHamdyy/backend-test-netway.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/HazemHamdyy/backend-test-netway/issues"
+  },
+  "homepage": "https://github.com/HazemHamdyy/backend-test-netway#readme",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cache-manager": "^6.3.2",
+    "express": "^4.21.2",
+    "express-validator": "^7.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.3"
+  }
+}
